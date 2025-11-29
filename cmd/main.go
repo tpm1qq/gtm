@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/tpm1qq/gtm/internal/app"
 
 func main() {
-
+	app.RunGTM()
 }
