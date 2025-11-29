@@ -3,10 +3,11 @@ package app
 import (
 	"flag"
 	"fmt"
+	"github.com/tpm1qq/gtm/internal/pkg/tools/hyprland"
+	"github.com/tpm1qq/gtm/internal/pkg/tools/rofi"
+	"github.com/tpm1qq/gtm/internal/pkg/tools/waybar"
 	"os"
 	"strings"
-
-	"github.com/tpm1qq/gtm/internal/pkg/tools"
 )
 
 func RunGTM() {
@@ -20,15 +21,20 @@ func RunGTM() {
 	tool = strings.ToLower(tool)
 	switch tool {
 	case "hyprland":
-		if err := tools.Hyprland_SetColor(color); err != nil {
+		if err := hyprland.Hyprland_SetColor(color); err != nil {
 			fmt.Fprintln(os.Stderr, "error setting color:", err)
 		}
-		/* case "waybar":
-			if err := tools.Waybar_SetColor(color); err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-		case "rofi":
-			if err := tools.Rofi_SetColor(color); err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-				os.Exit(1)*/
+	case "waybar":
+		if err := waybar.Waybar_SetColor(color); err != nil {
+			fmt.Fprintln(os.Stderr, "error setting color:", err)
+		}
+		if err := waybar.Waybar_reload(); err != nil {
+			fmt.Fprintln(os.Stderr, "error reloading waybar", err)
+		}
+
+	case "rofi":
+		if err := rofi.Rofi_SetColor(color); err != nil {
+			fmt.Fprintln(os.Stderr, "error setting color:", err)
+		}
 	}
 }
