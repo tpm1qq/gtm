@@ -3,6 +3,7 @@ package hyprland
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -54,4 +55,10 @@ func editConfig(v string) error {
 		return err
 	}
 	return nil
+}
+func Hyprland_reload() error {
+	cmd := exec.Command("hyprctl", "reload")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }

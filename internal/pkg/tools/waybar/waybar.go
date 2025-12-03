@@ -37,10 +37,10 @@ func formatString(v string) (string, error) {
 }
 func editConfig(v string) error {
 	file, err := os.ReadFile(path)
-	data := string(file)
 	if err != nil {
 		return err
 	}
+	data := string(file)
 	if strings.Contains(data, "gtmc") {
 		i := strings.Index(data, "gtmc")
 		if i == -1 {
