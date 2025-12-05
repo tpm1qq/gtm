@@ -3,93 +3,68 @@ package app
 import (
 	"flag"
 	"fmt"
-	"github.com/tpm1qq/gtm/internal/pkg/tools/hyprland"
-	"github.com/tpm1qq/gtm/internal/pkg/tools/hyprpaper"
-	"github.com/tpm1qq/gtm/internal/pkg/tools/rofi"
-	"github.com/tpm1qq/gtm/internal/pkg/tools/waybar"
+	"github.com/tpm1qq/gtm/internal/pkg/core"
 	"os"
-	"strings"
 	"sync"
 )
 
 func RunGTM() {
-	var tool string
+	var tools core.ToolList
 	var global bool
 	var color string
 	var wallpaper string
+	var settings core.ToolSettings
+	var selection core.ToolList
+
 	flag.BoolVar(&global, "global", false, "global flag; apply config changes to all tools at the same time")
 	flag.BoolVar(&global, "g", false, "global flag; apply config changes to all tools at the same time")
-	flag.StringVar(&tool, "tool", "", "which tool's config the user wants to change")
-	flag.StringVar(&tool, "t", "", "which tool's config the user wants to change")
+	flag.Var(&tools, "package", "which tool's config the user wants to change")
+	flag.Var(&tools, "p", "which tool's config the user wants to change")
 	flag.StringVar(&color, "color", "", "change the color of the given tool(s)")
 	flag.StringVar(&wallpaper, "wallpaper", "", "change the current wallpaper")
 	flag.StringVar(&wallpaper, "w", "", "change the current wallpaper")
 
 	flag.Parse()
 
-	tool = strings.ToLower(tool)
-	switch {
-	case global && tool == "":
-		var wg = sync.WaitGroup{}
-		var errors = make(chan error, 4)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := hyprland.Hyprland_SetColor(color); err != nil {
-				errors <- err
-			}
-		}()
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := waybar.Waybar_SetColor(color); err != nil {
-				errors <- err
-			}
-			if err := waybar.Waybar_reload(); err != nil {
-				errors <- err
-			}
-		}()
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			if err := rofi.Rofi_SetColor(color); err != nil {
-				errors <- err
-			}
-		}()
-		wg.Wait()
-		close(errors)
-		for err := range errors {
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-			}
-		}
-	case !global && tool != "":
-		switch tool {
-		case "hyprland":
-			if err := hyprland.Hyprland_SetColor(color); err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-			}
-		case "waybar":
-			if err := waybar.Waybar_SetColor(color); err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-			}
-			if err := waybar.Waybar_reload(); err != nil {
-				fmt.Fprintln(os.Stderr, "error reloading waybar", err)
-			}
+	settings = core.ToolSettings{
+		Color:     color,
+		Wallpaper: wallpaper,
+	}
 
-		case "rofi":
-			if err := rofi.Rofi_SetColor(color); err != nil {
-				fmt.Fprintln(os.Stderr, "error setting color:", err)
-			}
-		case "hyprpaper":
-			if err := hyprpaper.Hyprpaper_changeWallpaper(wallpaper); err != nil {
-				fmt.Fprintln(os.Stderr, "error changing wallpaper:", err)
-			}
-			if err := hyprpaper.Hyprpaper_reload(); err != nil {
-				fmt.Fprintln(os.Stderr, "error reloading hyprpaper:", err)
-			}
-		}
-	case !global && tool == "":
+	var all = core.ToolList{
+		core.ToolHyprland,
+		core.ToolWaybar,
+		core.ToolRofi,
+		core.ToolHyprpaper,
+	}
+
+	switch {
+	case global && len(tools) == 0:
+		selection = all
+	case !global && len(tools) > 0:
+		selection = tools
+	case !global && len(tools) == 0:
 		fmt.Println("neither global nor tool flag set!")
+		return
+	default:
+		fmt.Println("flag error")
+		return
+	}
+	var wg = sync.WaitGroup{}
+	var errs = make(chan error, len(selection))
+	for _, v := range selection {
+		curr := v
+		wg.Go(func() {
+			if err := core.ApplyChanges(curr, settings); err != nil {
+				errs <- err
+			}
+		})
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error setting color:", err)
+		}
 	}
 }
