@@ -1,0 +1,5 @@
+/* GTM rofi overrides */
+/* gtmc:#B3B6BBff -- current color */
+* {
+	selected-normal-background: #B3B6BBff;
+}

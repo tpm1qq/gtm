@@ -1,0 +1,32 @@
+/* GTM waybar overrides */
+
+/* gtmc:#B3B6BB -- current color */
+tooltip {
+  border: 2px solid #B3B6BB;
+}
+
+tooltip label {
+  color: #B3B6BB;
+}
+
+#clock,
+#tray,
+#battery,
+#network,
+#backlight,
+#pulseaudio {
+  border: 1px solid #B3B6BB;
+}
+
+#workspaces button {
+  color: #B3B6BB;
+  border: 2px solid #B3B6BB;
+}
+
+#workspaces button.active {
+  background-color: #B3B6BB;
+}
+
+#clock {
+  background-color: #B3B6BB;
+}

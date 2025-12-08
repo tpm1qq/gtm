@@ -1,0 +1,23 @@
+# GTM theme #
+
+global:
+  enabled: false
+  wallpaper: tahoedark.png
+  color: "#5A69C8"
+    
+tools:
+  hyprland:
+    enabled: true
+    color: "#5A69C8"
+    
+  hyprpaper:
+    enabled: true
+    wallpaper: tahoedark.png
+      
+  waybar:
+    enabled: true
+    color: "#5A69C8"
+
+  rofi:
+    enabled: true
+    color: "#5A69C8"

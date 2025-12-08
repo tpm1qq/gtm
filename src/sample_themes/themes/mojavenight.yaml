@@ -1,0 +1,23 @@
+# GTM theme #
+
+global:
+  enabled: true
+  wallpaper: mojavenight.jpg
+  color: "#B3B6BB"
+    
+tools:
+  hyprland:
+    enabled: true
+    color: "#B3B6BB"
+    
+  hyprpaper:
+    enable: true
+    wallpaper: tahoedark.png
+      
+  waybar:
+    enabled: true
+    color: "#B3B6BB"
+
+  rofi:
+    enabled: true
+    color: "#B3B6BB"
