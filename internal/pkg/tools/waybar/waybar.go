@@ -28,7 +28,7 @@ func formatString(v string) (string, error) {
 		return "", fmt.Errorf("no color value given")
 
 	case strings.HasPrefix(v, "#") && len(v) == 7:
-		strings.ToUpper(v)
+		v = strings.ToUpper(v)
 		return v, nil
 
 	default:
