@@ -7,13 +7,35 @@ import (
 	"path/filepath"
 	"sync"
 
+	c "github.com/tpm1qq/gtm/internal/pkg/config"
 	"github.com/tpm1qq/gtm/internal/pkg/core"
 	t "github.com/tpm1qq/gtm/internal/pkg/theme"
 )
 
 func RunGTM() {
-	var homeDir, _ = os.UserHomeDir()
-	var cfgDir = filepath.Join(homeDir, ".config", "gtm", "themes")
+
+	cfgDir, err := os.UserConfigDir()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "error loading theme:", err)
+		return
+	}
+	themeDir := filepath.Join(cfgDir, "gtm", "themes")
+	confPath := filepath.Join(cfgDir, "gtm", "gtm.yaml")
+	conf, err := c.GetData(confPath)
+	if err != nil {
+		switch {
+		case conf == c.Data{}:
+			fmt.Fprintln(os.Stderr, "error reading conf data:", err)
+			return
+		case conf.Paths == c.Paths{}:
+			fmt.Fprintln(os.Stderr, "path error; no paths set", err)
+		case conf.Paths.BackgroundPath == "" && conf.Paths.ToolsPath != "":
+			fmt.Println("Warning: BackgroundPath not set!")
+		case conf.Paths.BackgroundPath != "" && conf.Paths.ToolsPath == "":
+			fmt.Println("Warning: ToolsPath not set!")
+		}
+	}
+	// todo add path as arguments for tools api calls
 	var tools core.ToolList
 	var theme string
 	var global bool
@@ -38,7 +60,7 @@ func RunGTM() {
 	flag.Parse()
 
 	if len(theme) > 0 {
-		themePath := filepath.Join(cfgDir, theme+".yaml")
+		themePath := filepath.Join(themeDir, theme+".yaml")
 		v, err := t.LoadTheme(themePath)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "error loading theme:", err)

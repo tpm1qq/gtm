@@ -1,65 +1,119 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
-type Config struct {
-	System  SystemSettings  `yaml:"system"`
-	Current CurrentSettings `yaml:"current"`
+type Paths struct {
+	BackgroundPath string
+	ToolsPath      string
 }
 
-type SystemSettings struct {
+type Data struct {
+	Paths           Paths
+	CurrentSettings currentSettings
+}
+
+type config struct {
+	System  systemSettings  `yaml:"system"`
+	Current currentSettings `yaml:"current"`
+}
+
+type systemSettings struct {
 	ToolsDir      string `yaml:"toolsdir"`
-	ConfigDir     string `yaml:"configdir"`
 	BackgroundDir string `yaml:"backgrounddir"`
 }
 
-type CurrentSettings struct {
+type currentSettings struct {
 	// Do I really need this? Wouldn't just having the CurrentTheme in here suffice?
 	// perhaps add something related to the setup functionality here in case I need to save something related to that later, might as well just leave this here for the time being
-	CurrentTheme CurrentTheme `yaml:"tools"`
+	CurrentTheme currentTheme `yaml:"tools"`
 }
 
-type CurrentTheme struct {
-	Hyprland  HyprlandBlock  `yaml:"hyprland"`
-	Hyprpaper HyprpaperBlock `yaml:"hyprpaper"`
-	Waybar    WaybarBlock    `yaml:"waybar"`
-	Rofi      RofiBlock      `yaml:"rofi"`
+type currentTheme struct {
+	Hyprland  hyprlandBlock  `yaml:"hyprland"`
+	Hyprpaper hyprpaperBlock `yaml:"hyprpaper"`
+	Waybar    waybarBlock    `yaml:"waybar"`
+	Rofi      rofiBlock      `yaml:"rofi"`
 }
 
-type HyprlandBlock struct {
+type hyprlandBlock struct {
 	Enabled bool   `yaml:"enabled"`
 	Color   string `yaml:"color"`
 }
 
-type HyprpaperBlock struct {
+type hyprpaperBlock struct {
 	Enabled   bool   `yaml:"enabled"`
 	Wallpaper string `yaml:"wallpaper"`
 }
 
-type WaybarBlock struct {
+type waybarBlock struct {
 	Enabled bool   `yaml:"enabled"`
 	Color   string `yaml:"color"`
 }
 
-type RofiBlock struct {
+type rofiBlock struct {
 	Enabled bool   `yaml:"enabled"`
 	Color   string `yaml:"color"`
 }
 
-func LoadConfig(p string) (Config, error) {
+func loadConfig(p string) (config, error) {
 	data, err := os.ReadFile(p)
 	if err != nil {
-		return Config{}, fmt.Errorf("error reading file: %w", err)
+		return config{}, fmt.Errorf("error reading file: %w", err)
 	}
-	var r Config
+	var r config
 	err = yaml.Unmarshal(data, &r)
 	if err != nil {
-		return Config{}, fmt.Errorf("error yaml.Unmarshal: %w", err)
+		return config{}, fmt.Errorf("error yaml.Unmarshal: %w", err)
 	}
 	return r, nil
+}
+func getPaths(c config) (Paths, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return Paths{}, fmt.Errorf("error getting home dir: %w", err)
+	}
+	var p Paths
+	var errs []error
+	curr := c.System.ToolsDir
+	if curr == "" {
+		errs = append(errs, fmt.Errorf("toolsDir is emtpy"))
+	}
+	curr, found := strings.CutPrefix(curr, "~/")
+	if found {
+		curr = filepath.Join(home, curr)
+	}
+	p.ToolsPath = curr
+	curr = c.System.BackgroundDir
+	if curr == "" {
+		errs = append(errs, fmt.Errorf("backgroundDir empty"))
+	}
+	curr, found = strings.CutPrefix(curr, "~/")
+	if found {
+		curr = filepath.Join(home, curr)
+	}
+	p.BackgroundPath = curr
+	return p, errors.Join(errs...)
+}
+func GetData(arg string) (Data, error) {
+	var errs []error
+	c, err := loadConfig(arg)
+	if err != nil {
+		return Data{}, fmt.Errorf("error loading config: %w", err)
+	}
+	p, err := getPaths(c)
+	if err != nil {
+		errs = append(errs, fmt.Errorf("error loading paths: %w", err))
+	}
+	var d Data
+	d.CurrentSettings = c.Current
+	d.Paths = p
+	return d, errors.Join(errs...)
 }
