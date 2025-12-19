@@ -8,15 +8,12 @@ import (
 	"strings"
 )
 
-var home, _ = os.UserHomeDir()
-var path = filepath.Join(home, ".config", "hypr", "gtm_hyprland.conf")
-
-func Hyprland_SetColor(v string) error {
+func Hyprland_SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
 	}
-	err = editConfig(v)
+	err = editConfig(v, p)
 	if err != nil {
 		return err
 	}
@@ -36,7 +33,8 @@ func formatString(v string) (string, error) {
 		return "", fmt.Errorf("color not formatted correctly")
 	}
 }
-func editConfig(v string) error {
+func editConfig(v string, p string) error {
+	var path = filepath.Join(p, "hypr", "gtm_hyprland.conf")
 	file, err := os.ReadFile(path)
 	data := string(file)
 	if err != nil {

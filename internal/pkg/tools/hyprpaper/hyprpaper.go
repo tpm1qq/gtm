@@ -8,31 +8,21 @@ import (
 	"strings"
 )
 
-var home, _ = os.UserHomeDir()
-var path = filepath.Join(home, ".config", "hypr", "gtm_hyprpaper.conf")
-var path_wp = filepath.Join(home, "Backgrounds")
-
-// todo: when config functionality is introduced, add variable for saving default wallpaper path
-// currently hardcoding the path is the only way, perhaps use path given in hyprpaper.conf and assume its the default for all wallpapers?
-// setup functionality can perhaps give this choice
-
-func Hyprpaper_changeWallpaper(v string) error {
+func Hyprpaper_changeWallpaper(v string, p string, b string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
 	}
-	err = editConfig(v)
+	err = editConfig(v, p, b)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 func formatString(v string) (string, error) {
-	switch {
-	case v == "":
+	if v == "" {
 		return "", fmt.Errorf("no wallpaper given")
-
-	case v != "":
+	} else {
 		switch ext := strings.ToLower(filepath.Ext(v)); ext {
 		case ".png", ".jpg", ".jpeg", ".webp":
 			return v, nil
@@ -40,30 +30,42 @@ func formatString(v string) (string, error) {
 		default:
 			return "", fmt.Errorf("invalid file format")
 		}
-
-	default:
-		return "", fmt.Errorf("wallpaper string not formatted correctly")
 	}
 }
-func editConfig(v string) error {
+func editConfig(v string, p string, b string) error {
+	var path = filepath.Join(p, "hypr", "gtm_hyprpaper.conf")
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("error reading file %w", err)
 	}
 	data := string(file)
 	if strings.Contains(data, "gtmc") {
 		i := strings.Index(data, "gtmc")
 		if i == -1 {
-			return fmt.Errorf("config doesn't contain start marker")
+			return fmt.Errorf("config doesn't contain gtmc start marker")
 		}
 		start := i + len("gtmc")
 		i = strings.Index(data, "!?")
 		if i == -1 {
-			return fmt.Errorf("config doesn't contain end marker")
+			return fmt.Errorf("config doesn't contain gtmc end marker")
 		}
 		end := i
 		curr := data[start+1 : end]
 		data = strings.ReplaceAll(data, curr, v)
+	}
+	if strings.Contains(data, "gtmb") {
+		i := strings.Index(data, "gtmb")
+		if i == -1 {
+			return fmt.Errorf("config doesn't contain gtmb start marker")
+		}
+		start := i + len("gtmb")
+		i = strings.Index(data, "?!")
+		if i == -1 {
+			return fmt.Errorf("config doesn't contain gtmb end marker")
+		}
+		end := i
+		curr := data[start+1 : end]
+		data = strings.ReplaceAll(data, curr, b)
 	}
 	err = os.WriteFile(path, []byte(data), 0664)
 	if err != nil {

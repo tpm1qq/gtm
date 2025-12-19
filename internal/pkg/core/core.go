@@ -2,11 +2,13 @@ package core
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/tpm1qq/gtm/internal/pkg/config"
 	"github.com/tpm1qq/gtm/internal/pkg/tools/hyprland"
 	"github.com/tpm1qq/gtm/internal/pkg/tools/hyprpaper"
 	"github.com/tpm1qq/gtm/internal/pkg/tools/rofi"
 	"github.com/tpm1qq/gtm/internal/pkg/tools/waybar"
-	"strings"
 )
 
 type ToolName string
@@ -44,17 +46,17 @@ func (t *ToolList) String() string {
 	return strings.Join(res, ",")
 }
 
-func ApplyChanges(n ToolName, s ToolSettings) error {
+func ApplyChanges(n ToolName, s ToolSettings, p config.Paths) error {
 	switch n {
 	case ToolHyprland:
 		if s.Color != "" {
-			if err := hyprland.Hyprland_SetColor(s.Color); err != nil {
+			if err := hyprland.Hyprland_SetColor(s.Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting hyprland color: %w", err)
 			}
 		}
 	case ToolWaybar:
 		if s.Color != "" {
-			if err := waybar.Waybar_SetColor(s.Color); err != nil {
+			if err := waybar.Waybar_SetColor(s.Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting waybar color: %w", err)
 			}
 		}
@@ -64,12 +66,12 @@ func ApplyChanges(n ToolName, s ToolSettings) error {
 
 	case ToolRofi:
 		if s.Color != "" {
-			if err := rofi.Rofi_SetColor(s.Color); err != nil {
+			if err := rofi.Rofi_SetColor(s.Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting rofi color: %w", err)
 			}
 		}
 	case ToolHyprpaper:
-		if err := hyprpaper.Hyprpaper_changeWallpaper(s.Wallpaper); err != nil {
+		if err := hyprpaper.Hyprpaper_changeWallpaper(s.Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
 			return fmt.Errorf("error applying hyprpaper change: %w", err)
 		}
 		if err := hyprpaper.Hyprpaper_reload(); err != nil {

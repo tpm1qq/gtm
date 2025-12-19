@@ -8,15 +8,12 @@ import (
 	"strings"
 )
 
-var home, _ = os.UserHomeDir()
-var path = filepath.Join(home, ".config", "waybar", "gtm_waybar.css")
-
-func Waybar_SetColor(v string) error {
+func Waybar_SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
 	}
-	err = editConfig(v)
+	err = editConfig(v, p)
 	if err != nil {
 		return err
 	}
@@ -35,7 +32,8 @@ func formatString(v string) (string, error) {
 		return "", fmt.Errorf("color not formatted correctly")
 	}
 }
-func editConfig(v string) error {
+func editConfig(v string, p string) error {
+	var path = filepath.Join(p, "waybar", "gtm_waybar.css")
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return err

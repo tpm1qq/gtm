@@ -7,15 +7,12 @@ import (
 	"strings"
 )
 
-var home, _ = os.UserHomeDir()
-var path = filepath.Join(home, ".config", "rofi", "gtm_rofi.rasi")
-
-func Rofi_SetColor(v string) error {
+func Rofi_SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
 	}
-	err = editConfig(v)
+	err = editConfig(v, p)
 	if err != nil {
 		return err
 	}
@@ -27,7 +24,7 @@ func formatString(v string) (string, error) {
 		return "", fmt.Errorf("no color value given")
 
 	case strings.HasPrefix(v, "#") && len(v) == 7:
-		strings.ToLower(v)
+		v = strings.ToLower(v)
 		v = v + "ff"
 		return v, nil
 
@@ -35,7 +32,8 @@ func formatString(v string) (string, error) {
 		return "", fmt.Errorf("color not formatted correctly")
 	}
 }
-func editConfig(v string) error {
+func editConfig(v string, p string) error {
+	var path = filepath.Join(p, "rofi", "gtm_rofi.rasi")
 	file, err := os.ReadFile(path)
 	data := string(file)
 	if err != nil {

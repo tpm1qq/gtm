@@ -90,7 +90,10 @@ func getPaths(c config) (Paths, error) {
 	if found {
 		curr = filepath.Join(home, curr)
 	}
-	p.ToolsPath = curr
+	p.ToolsPath, err = filepath.Abs(curr)
+	if err != nil {
+		return Paths{}, fmt.Errorf("error getting absolute path: %w", err)
+	}
 	curr = c.System.BackgroundDir
 	if curr == "" {
 		errs = append(errs, fmt.Errorf("backgroundDir empty"))
@@ -99,7 +102,10 @@ func getPaths(c config) (Paths, error) {
 	if found {
 		curr = filepath.Join(home, curr)
 	}
-	p.BackgroundPath = curr
+	p.BackgroundPath, err = filepath.Abs(curr)
+	if err != nil {
+		return Paths{}, fmt.Errorf("error getting absolute path: %w", err)
+	}
 	return p, errors.Join(errs...)
 }
 func GetData(arg string) (Data, error) {

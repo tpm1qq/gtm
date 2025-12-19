@@ -22,6 +22,7 @@ func RunGTM() {
 	themeDir := filepath.Join(cfgDir, "gtm", "themes")
 	confPath := filepath.Join(cfgDir, "gtm", "gtm.yaml")
 	conf, err := c.GetData(confPath)
+	var bkgDirSet bool
 	if err != nil {
 		switch {
 		case conf == c.Data{}:
@@ -31,11 +32,15 @@ func RunGTM() {
 			fmt.Fprintln(os.Stderr, "path error; no paths set", err)
 		case conf.Paths.BackgroundPath == "" && conf.Paths.ToolsPath != "":
 			fmt.Println("Warning: BackgroundPath not set!")
+			bkgDirSet = false
 		case conf.Paths.BackgroundPath != "" && conf.Paths.ToolsPath == "":
-			fmt.Println("Warning: ToolsPath not set!")
+			fmt.Fprintln(os.Stderr, "config error; ToolsPath not set!")
+			return
 		}
+	} else {
+		bkgDirSet = true
 	}
-	// todo add path as arguments for tools api calls
+	// todo change current settings in conf when calling tools api
 	var tools core.ToolList
 	var theme string
 	var global bool
@@ -48,6 +53,11 @@ func RunGTM() {
 		core.ToolWaybar,
 		core.ToolRofi,
 		core.ToolHyprpaper,
+	}
+	var allNoBkg = core.ToolList{
+		core.ToolHyprland,
+		core.ToolWaybar,
+		core.ToolRofi,
 	}
 
 	flag.BoolVar(&global, "global", false, "global flag; apply config changes to all tools at the same time")
@@ -80,7 +90,7 @@ func RunGTM() {
 			if v.Tools.Hyprland.Enabled {
 				selection = append(selection, core.ToolHyprland)
 			}
-			if v.Tools.Hyprpaper.Enabled {
+			if v.Tools.Hyprpaper.Enabled && bkgDirSet {
 				selection = append(selection, core.ToolHyprpaper)
 			}
 			if v.Tools.Waybar.Enabled {
@@ -98,7 +108,11 @@ func RunGTM() {
 
 		switch {
 		case global && len(tools) == 0:
-			selection = all
+			if bkgDirSet {
+				selection = all
+			} else {
+				selection = allNoBkg
+			}
 		case !global && len(tools) > 0:
 			selection = tools
 		case !global && len(tools) == 0:
@@ -115,7 +129,7 @@ func RunGTM() {
 	for _, v := range selection {
 		curr := v
 		wg.Go(func() {
-			if err := core.ApplyChanges(curr, settings); err != nil {
+			if err := core.ApplyChanges(curr, settings, conf.Paths); err != nil {
 				errs <- err
 			}
 		})
