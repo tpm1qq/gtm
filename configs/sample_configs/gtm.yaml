@@ -1,0 +1,23 @@
+# GTM config #
+
+system:
+  toolsdir: "~/.config"
+  backgrounddir: "~/Backgrounds"
+  
+current:
+  tools:
+    hyprland:
+      enabled: true
+      color: "#5A69C8"
+
+    hyprpaper:
+      enabled: true
+      wallpaper: tahoedark.png
+
+    waybar:
+      enabled: true
+      color: "#5A69C8"
+
+    rofi:
+      enabled: true
+      color: "#5A69C8"  
