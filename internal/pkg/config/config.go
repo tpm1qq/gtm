@@ -66,19 +66,19 @@ type rofiBlock struct {
 func loadConfig(p string) (config, error) {
 	data, err := os.ReadFile(p)
 	if err != nil {
-		return config{}, fmt.Errorf("error reading file: %w", err)
+		return config{}, fmt.Errorf("error reading file %w", err)
 	}
 	var r config
 	err = yaml.Unmarshal(data, &r)
 	if err != nil {
-		return config{}, fmt.Errorf("error yaml.Unmarshal: %w", err)
+		return config{}, fmt.Errorf("error yaml.Unmarshal %w", err)
 	}
 	return r, nil
 }
 func getPaths(c config) (Paths, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return Paths{}, fmt.Errorf("error getting home dir: %w", err)
+		return Paths{}, fmt.Errorf("error getting home dir %w", err)
 	}
 	var p Paths
 	var errs []error
@@ -92,7 +92,7 @@ func getPaths(c config) (Paths, error) {
 	}
 	p.ToolsPath, err = filepath.Abs(curr)
 	if err != nil {
-		return Paths{}, fmt.Errorf("error getting absolute path: %w", err)
+		return Paths{}, fmt.Errorf("error getting absolute path %w", err)
 	}
 	curr = c.System.BackgroundDir
 	if curr == "" {
@@ -104,22 +104,38 @@ func getPaths(c config) (Paths, error) {
 	}
 	p.BackgroundPath, err = filepath.Abs(curr)
 	if err != nil {
-		return Paths{}, fmt.Errorf("error getting absolute path: %w", err)
+		return Paths{}, fmt.Errorf("error getting absolute path %w", err)
 	}
 	return p, errors.Join(errs...)
 }
-func GetData(arg string) (Data, error) {
+func GetData(path string) (Data, error) {
 	var errs []error
-	c, err := loadConfig(arg)
+	c, err := loadConfig(path)
 	if err != nil {
-		return Data{}, fmt.Errorf("error loading config: %w", err)
+		return Data{}, fmt.Errorf("error loading config %w", err)
 	}
 	p, err := getPaths(c)
 	if err != nil {
-		errs = append(errs, fmt.Errorf("error loading paths: %w", err))
+		errs = append(errs, fmt.Errorf("error loading paths %w", err))
 	}
 	var d Data
 	d.CurrentSettings = c.Current
 	d.Paths = p
 	return d, errors.Join(errs...)
+}
+func WriteData(data Data, path string) error {
+	//this is bad
+	cfg, err := loadConfig(path)
+	if err != nil {
+		return fmt.Errorf("error loading config %w", err)
+	}
+	cfg.Current = data.CurrentSettings
+	v, err := yaml.Marshal(cfg)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(path, v, 0644); err != nil {
+		return err
+	}
+	return nil
 }

@@ -51,31 +51,31 @@ func ApplyChanges(n ToolName, s ToolSettings, p config.Paths) error {
 	case ToolHyprland:
 		if s.Color != "" {
 			if err := hyprland.Hyprland_SetColor(s.Color, p.ToolsPath); err != nil {
-				return fmt.Errorf("error setting hyprland color: %w", err)
+				return fmt.Errorf("error setting hyprland color %w", err)
 			}
 		}
 	case ToolWaybar:
 		if s.Color != "" {
 			if err := waybar.Waybar_SetColor(s.Color, p.ToolsPath); err != nil {
-				return fmt.Errorf("error setting waybar color: %w", err)
+				return fmt.Errorf("error setting waybar color %w", err)
 			}
 		}
 		if err := waybar.Waybar_reload(); err != nil {
-			return fmt.Errorf("error reloading waybar: %w", err)
+			return fmt.Errorf("error reloading waybar %w", err)
 		}
 
 	case ToolRofi:
 		if s.Color != "" {
 			if err := rofi.Rofi_SetColor(s.Color, p.ToolsPath); err != nil {
-				return fmt.Errorf("error setting rofi color: %w", err)
+				return fmt.Errorf("error setting rofi color %w", err)
 			}
 		}
 	case ToolHyprpaper:
 		if err := hyprpaper.Hyprpaper_changeWallpaper(s.Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
-			return fmt.Errorf("error applying hyprpaper change: %w", err)
+			return fmt.Errorf("error applying hyprpaper change %w", err)
 		}
 		if err := hyprpaper.Hyprpaper_reload(); err != nil {
-			return fmt.Errorf("error reloading hyprpaper: %w", err)
+			return fmt.Errorf("error reloading hyprpaper %w", err)
 		}
 	}
 	return nil

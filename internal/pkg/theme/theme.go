@@ -48,12 +48,12 @@ type RofiBlock struct {
 func LoadTheme(p string) (Theme, error) {
 	data, err := os.ReadFile(p)
 	if err != nil {
-		return Theme{}, fmt.Errorf("error reading file: %w", err)
+		return Theme{}, fmt.Errorf("error reading file %w", err)
 	}
 	var r Theme
 	err = yaml.Unmarshal(data, &r)
 	if err != nil {
-		return Theme{}, fmt.Errorf("error yaml.Unmarshal: %w", err)
+		return Theme{}, fmt.Errorf("error yaml.Unmarshal %w", err)
 	}
 	return r, nil
 }

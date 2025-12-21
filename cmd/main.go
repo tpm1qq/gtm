@@ -1,7 +1,15 @@
 package main
 
-import "github.com/tpm1qq/gtm/internal/app"
+import (
+	"fmt"
+	"os"
+
+	"github.com/tpm1qq/gtm/internal/app"
+)
 
 func main() {
-	app.RunGTM()
+	if err := app.RunGTM(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
