@@ -38,13 +38,12 @@ func RunGTM() error {
 	} else {
 		bkgDirSet = true
 	}
-	// todo change current settings in conf when calling tools api
 	var tools core.ToolList
 	var theme string
 	var global bool
 	var color string
 	var wallpaper string
-	var settings core.ToolSettings
+	var settings = make(map[core.ToolName]core.ToolSettings)
 	var selection core.ToolList
 	var all = core.ToolList{
 		core.ToolHyprland,
@@ -58,9 +57,7 @@ func RunGTM() error {
 		core.ToolRofi,
 	}
 
-	// this still just uses a global color for everything despite giving the illusion of supporting multiple colors and seperate settings per tool.
-	// the config and themes track settings seperatly but the application logic still uses a single settings struct made from either the color flag or the hyprland tool color field.
-	// per tool functionality *can* be achieved currently by just running the tool multiple times using different tool flags each time.
+	// per tool functionality using the cli *can* be achieved currently by just running the tool multiple times using different tool flags each time.
 	flag.BoolVar(&global, "global", false, "global flag; apply config changes to all tools at the same time")
 	flag.Var(&tools, "tools", "which tool's config the user wants to change")
 	flag.StringVar(&color, "color", "", "change the color of the given tool(s)")
@@ -69,6 +66,9 @@ func RunGTM() error {
 
 	flag.Parse()
 
+	//filling the settings this way might not be the most efficient.
+	//should work fine though under the assumption that no theme means
+	//we only get a single color from the commandline, no matter how many tools are selected
 	if len(theme) > 0 {
 		themePath := filepath.Join(themeDir, theme+".yaml")
 		v, err := t.LoadTheme(themePath)
@@ -77,34 +77,57 @@ func RunGTM() error {
 		}
 		if v.Global.Enabled {
 			selection = all
-			settings = core.ToolSettings{
-				Color:     v.Global.Color,
+			settings[core.ToolHyprland] = core.ToolSettings{
+				Color: v.Global.Color,
+			}
+			settings[core.ToolHyprpaper] = core.ToolSettings{
 				Wallpaper: v.Global.Wallpaper,
 			}
-		} else {
-			settings = core.ToolSettings{
-				Color:     v.Tools.Hyprland.Color,
-				Wallpaper: v.Tools.Hyprpaper.Wallpaper,
+			settings[core.ToolWaybar] = core.ToolSettings{
+				Color: v.Global.Color,
 			}
+			settings[core.ToolRofi] = core.ToolSettings{
+				Color: v.Global.Color,
+			}
+		} else {
 			if v.Tools.Hyprland.Enabled {
+				settings[core.ToolHyprland] = core.ToolSettings{
+					Color: v.Tools.Hyprland.Color,
+				}
 				selection = append(selection, core.ToolHyprland)
 			}
 			if v.Tools.Hyprpaper.Enabled && bkgDirSet {
+				settings[core.ToolHyprpaper] = core.ToolSettings{
+					Wallpaper: v.Tools.Hyprpaper.Wallpaper,
+				}
 				selection = append(selection, core.ToolHyprpaper)
 			}
 			if v.Tools.Waybar.Enabled {
+				settings[core.ToolWaybar] = core.ToolSettings{
+					Color: v.Tools.Waybar.Color,
+				}
 				selection = append(selection, core.ToolWaybar)
 			}
 			if v.Tools.Rofi.Enabled {
+				settings[core.ToolRofi] = core.ToolSettings{
+					Color: v.Tools.Rofi.Color,
+				}
 				selection = append(selection, core.ToolRofi)
 			}
 		}
 	} else {
-		settings = core.ToolSettings{
-			Color:     color,
+		settings[core.ToolHyprland] = core.ToolSettings{
+			Color: color,
+		}
+		settings[core.ToolHyprpaper] = core.ToolSettings{
 			Wallpaper: wallpaper,
 		}
-
+		settings[core.ToolWaybar] = core.ToolSettings{
+			Color: color,
+		}
+		settings[core.ToolRofi] = core.ToolSettings{
+			Color: color,
+		}
 		switch {
 		case global && len(tools) == 0:
 			if bkgDirSet {
@@ -142,13 +165,13 @@ func RunGTM() error {
 	for _, v := range selection {
 		switch v {
 		case core.ToolHyprland:
-			conf.CurrentSettings.CurrentTheme.Hyprland.Color = settings.Color
+			conf.CurrentSettings.CurrentTheme.Hyprland.Color = settings[core.ToolHyprland].Color
 		case core.ToolWaybar:
-			conf.CurrentSettings.CurrentTheme.Waybar.Color = settings.Color
+			conf.CurrentSettings.CurrentTheme.Waybar.Color = settings[core.ToolWaybar].Color
 		case core.ToolRofi:
-			conf.CurrentSettings.CurrentTheme.Rofi.Color = settings.Color
+			conf.CurrentSettings.CurrentTheme.Rofi.Color = settings[core.ToolRofi].Color
 		case core.ToolHyprpaper:
-			conf.CurrentSettings.CurrentTheme.Hyprpaper.Wallpaper = settings.Wallpaper
+			conf.CurrentSettings.CurrentTheme.Hyprpaper.Wallpaper = settings[core.ToolHyprpaper].Wallpaper
 		}
 	}
 	if err := c.WriteData(conf, confPath); err != nil {

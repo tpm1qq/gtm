@@ -46,17 +46,17 @@ func (t *ToolList) String() string {
 	return strings.Join(res, ",")
 }
 
-func ApplyChanges(n ToolName, s ToolSettings, p config.Paths) error {
-	switch n {
+func ApplyChanges(name ToolName, settings map[ToolName]ToolSettings, p config.Paths) error {
+	switch name {
 	case ToolHyprland:
-		if s.Color != "" {
-			if err := hyprland.Hyprland_SetColor(s.Color, p.ToolsPath); err != nil {
+		if settings[ToolHyprland].Color != "" {
+			if err := hyprland.Hyprland_SetColor(settings[ToolHyprland].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting hyprland color %w", err)
 			}
 		}
 	case ToolWaybar:
-		if s.Color != "" {
-			if err := waybar.Waybar_SetColor(s.Color, p.ToolsPath); err != nil {
+		if settings[ToolWaybar].Color != "" {
+			if err := waybar.Waybar_SetColor(settings[ToolWaybar].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting waybar color %w", err)
 			}
 		}
@@ -65,13 +65,13 @@ func ApplyChanges(n ToolName, s ToolSettings, p config.Paths) error {
 		}
 
 	case ToolRofi:
-		if s.Color != "" {
-			if err := rofi.Rofi_SetColor(s.Color, p.ToolsPath); err != nil {
+		if settings[ToolRofi].Color != "" {
+			if err := rofi.Rofi_SetColor(settings[ToolRofi].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting rofi color %w", err)
 			}
 		}
 	case ToolHyprpaper:
-		if err := hyprpaper.Hyprpaper_changeWallpaper(s.Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
+		if err := hyprpaper.Hyprpaper_changeWallpaper(settings[ToolHyprpaper].Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
 			return fmt.Errorf("error applying hyprpaper change %w", err)
 		}
 		if err := hyprpaper.Hyprpaper_reload(); err != nil {
