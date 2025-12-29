@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Waybar_SetColor(v string, p string) error {
+func SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func editConfig(v string, p string) error {
 	return nil
 }
 
-func Waybar_reload() error {
+func Reload() error {
 	cmd := exec.Command("pkill", "-SIGUSR2", "waybar")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

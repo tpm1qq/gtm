@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Hyprpaper_changeWallpaper(v string, p string, b string) error {
+func ChangeWallpaper(v string, p string, b string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func editConfig(v string, p string, b string) error {
 	}
 	return nil
 }
-func Hyprpaper_reload() error {
+func Reload() error {
 	cmd := exec.Command("pkill", "hyprpaper")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

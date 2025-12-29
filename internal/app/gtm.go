@@ -16,7 +16,7 @@ func RunGTM() error {
 
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
-		return fmt.Errorf("error loading theme, %w", err)
+		return fmt.Errorf("error getting user config directory %w", err)
 
 	}
 	themeDir := filepath.Join(cfgDir, "gtm", "themes")
@@ -28,7 +28,7 @@ func RunGTM() error {
 		case conf == c.Data{}:
 			return fmt.Errorf("error reading conf data, %w", err)
 		case conf.Paths == c.Paths{}:
-			fmt.Fprintln(os.Stderr, "path error; no paths set", err)
+			return fmt.Errorf("path error; no paths set %w", err)
 		case conf.Paths.BackgroundPath == "" && conf.Paths.ToolsPath != "":
 			fmt.Println("Warning: BackgroundPath not set!")
 			bkgDirSet = false

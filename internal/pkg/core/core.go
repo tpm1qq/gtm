@@ -50,33 +50,37 @@ func ApplyChanges(name ToolName, settings map[ToolName]ToolSettings, p config.Pa
 	switch name {
 	case ToolHyprland:
 		if settings[ToolHyprland].Color != "" {
-			if err := hyprland.Hyprland_SetColor(settings[ToolHyprland].Color, p.ToolsPath); err != nil {
+			if err := hyprland.SetColor(settings[ToolHyprland].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting hyprland color %w", err)
 			}
 		}
 	case ToolWaybar:
 		if settings[ToolWaybar].Color != "" {
-			if err := waybar.Waybar_SetColor(settings[ToolWaybar].Color, p.ToolsPath); err != nil {
+			if err := waybar.SetColor(settings[ToolWaybar].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting waybar color %w", err)
 			}
 		}
-		if err := waybar.Waybar_reload(); err != nil {
+		if err := waybar.Reload(); err != nil {
 			return fmt.Errorf("error reloading waybar %w", err)
 		}
 
 	case ToolRofi:
 		if settings[ToolRofi].Color != "" {
-			if err := rofi.Rofi_SetColor(settings[ToolRofi].Color, p.ToolsPath); err != nil {
+			if err := rofi.SetColor(settings[ToolRofi].Color, p.ToolsPath); err != nil {
 				return fmt.Errorf("error setting rofi color %w", err)
 			}
 		}
 	case ToolHyprpaper:
-		if err := hyprpaper.Hyprpaper_changeWallpaper(settings[ToolHyprpaper].Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
-			return fmt.Errorf("error applying hyprpaper change %w", err)
+		if settings[ToolHyprpaper].Wallpaper != "" {
+			if err := hyprpaper.ChangeWallpaper(settings[ToolHyprpaper].Wallpaper, p.ToolsPath, p.BackgroundPath); err != nil {
+				return fmt.Errorf("error applying hyprpaper change %w", err)
+			}
 		}
-		if err := hyprpaper.Hyprpaper_reload(); err != nil {
+		if err := hyprpaper.Reload(); err != nil {
 			return fmt.Errorf("error reloading hyprpaper %w", err)
 		}
+	default:
+		return fmt.Errorf("error applying changes; no tool selected or typo?")
 	}
 	return nil
 }

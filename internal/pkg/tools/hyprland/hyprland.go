@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func Hyprland_SetColor(v string, p string) error {
+func SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func editConfig(v string, p string) error {
 	}
 	return nil
 }
-func Hyprland_reload() error {
+func Reload() error {
 	cmd := exec.Command("hyprctl", "reload")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

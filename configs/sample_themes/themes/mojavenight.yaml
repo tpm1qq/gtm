@@ -11,7 +11,7 @@ tools:
     color: "#B3B6BB"
     
   hyprpaper:
-    enable: true
+    enabled: true
     wallpaper: tahoedark.png
       
   waybar:

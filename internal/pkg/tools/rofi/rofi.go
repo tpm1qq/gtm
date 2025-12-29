@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Rofi_SetColor(v string, p string) error {
+func SetColor(v string, p string) error {
 	v, err := formatString(v)
 	if err != nil {
 		return err
