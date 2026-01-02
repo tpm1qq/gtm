@@ -12,3 +12,5 @@ To build the program just clone the repo, cd into the project directory and run 
 
 I have not yet implemented any sort of automatic setup functionality; you currently have to set up all the files yourself after building the program.
 
+This was made as a learning project, I do not gurantee that this works on anything but my own machine.
+
